@@ -1,0 +1,29 @@
+# Environment
+.env
+.env.local
+
+# Node / Vite
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# Go
+*.exe
+*.test
+*.out
+backend/acme-banking
+backend/acme-banking.exe
+
+# SQLite database (auto-created and reseeded on first run)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
