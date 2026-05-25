@@ -65,6 +65,15 @@ if (-not (Test-Path "go.sum")) {
         exit 1
     }
     Write-Host "✓ Go dependencies downloaded" -ForegroundColor Green
+} else {
+    # Pre-warm the module cache so `go run` doesn't download mid-startup
+    # and race the frontend's first proxied request. No-op when warm.
+    go mod download
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ go mod download failed" -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
 }
 Pop-Location
 
@@ -102,11 +111,39 @@ $frontendJob = Start-Job -ScriptBlock {
 
 # Wait for servers to start
 Write-Host "`n⏳ Waiting for servers to start..." -ForegroundColor Yellow
-Start-Sleep -Seconds 4
 
-# Check if servers are running
-$backendRunning = $backendJob.State -eq "Running"
-$frontendRunning = $frontendJob.State -eq "Running"
+function Wait-ForPort {
+    param([int]$Port, [int]$TimeoutSeconds = 60, [System.Management.Automation.Job]$Job)
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    # Probe both loopback families — Vite on Windows often binds ::1 only.
+    $addresses = @([System.Net.IPAddress]::Loopback, [System.Net.IPAddress]::IPv6Loopback)
+    while ((Get-Date) -lt $deadline) {
+        if ($Job -and $Job.State -ne "Running") { return $false }
+        foreach ($addr in $addresses) {
+            $client = $null
+            try {
+                $client = [System.Net.Sockets.TcpClient]::new($addr.AddressFamily)
+                $iar = $client.BeginConnect($addr, $Port, $null, $null)
+                if ($iar.AsyncWaitHandle.WaitOne(500) -and $client.Connected) {
+                    $client.EndConnect($iar)
+                    return $true
+                }
+            }
+            catch { }
+            finally {
+                if ($client) { $client.Close() }
+            }
+        }
+        Start-Sleep -Milliseconds 250
+    }
+    return $false
+}
+
+$backendReady = Wait-ForPort -Port $BackendPort -TimeoutSeconds 60 -Job $backendJob
+$frontendReady = Wait-ForPort -Port $FrontendPort -TimeoutSeconds 60 -Job $frontendJob
+
+$backendRunning = $backendReady -and $backendJob.State -eq "Running"
+$frontendRunning = $frontendReady -and $frontendJob.State -eq "Running"
 
 if ($backendRunning -and $frontendRunning) {
     Write-Host "✓ Backend running (Job ID: $($backendJob.Id))" -ForegroundColor Green
