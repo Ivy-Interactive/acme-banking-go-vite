@@ -41,8 +41,9 @@ export default function Login({ onSuccess }: Props) {
 
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Username</label>
+            <label htmlFor="login-username" className="mb-1 block text-sm font-medium text-slate-700">Username</label>
             <input
+              id="login-username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -53,8 +54,9 @@ export default function Login({ onSuccess }: Props) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+            <label htmlFor="login-password" className="mb-1 block text-sm font-medium text-slate-700">Password</label>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -7,6 +7,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 .vite/
+frontend/vite.config.d.ts
+frontend/vite.config.d.ts.map
+frontend/vitest.config.d.ts
+frontend/vitest.config.d.ts.map
 
 # Go
 *.exe
@@ -20,6 +24,11 @@ backend/acme-banking.exe
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Playwright / e2e
+e2e/test-results/
+e2e/playwright-report/
+e2e/blob-report/
 
 # IDE
 .idea/

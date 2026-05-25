@@ -129,6 +129,41 @@ sessions
   token (PK), user_id, expires_at
 ```
 
+## Testing
+
+Three layers, each runnable independently.
+
+### Backend (Go)
+Unit tests for pure helpers plus integration tests that exercise every endpoint against a real in-memory SQLite database via `httptest.Server`. The full mux is built via `buildMux()` so tests mount the exact same routes as production.
+
+```powershell
+cd backend
+go test ./... -v -count=1
+```
+
+`TestTransfer_Concurrent` is `t.Skip`-ped pending a fix to the read-then-write race in `handleTransfer`.
+
+### Frontend (Vitest + React Testing Library + MSW)
+Tests for the API client (`api.test.ts`), both screens (`Login.test.tsx`, `Dashboard.test.tsx`), and the auth gate (`App.test.tsx`). MSW intercepts `/api/*` so component tests never touch a real backend.
+
+```powershell
+cd frontend
+npm install
+npm test
+```
+
+### End-to-end (Playwright)
+Boots the real Go backend (against a throwaway temp SQLite file) and the real Vite dev server, then drives Chromium through login, deposit/withdraw, and transfer flows.
+
+```powershell
+cd e2e
+npm install
+npx playwright install chromium
+npx playwright test
+```
+
+The e2e backend honors `DB_PATH` so the dev `bank.db` is untouched. `VITE_API_URL` repoints Vite's dev proxy to the test backend port (5050).
+
 ## Security Notes
 
 This is a **demo**. It deliberately skips production concerns:

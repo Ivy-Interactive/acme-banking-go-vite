@@ -17,7 +17,12 @@ func main() {
 		port = "5000"
 	}
 
-	if err := initDB("bank.db"); err != nil {
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "bank.db"
+	}
+
+	if err := initDB(dbPath); err != nil {
 		log.Fatalf("failed to init database: %v", err)
 	}
 	defer db.Close()
@@ -26,18 +31,7 @@ func main() {
 		log.Fatalf("failed to seed data: %v", err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("POST /api/login", handleLogin)
-	mux.HandleFunc("POST /api/logout", requireAuth(handleLogout))
-	mux.HandleFunc("GET /api/me", requireAuth(handleMe))
-	mux.HandleFunc("GET /api/account", requireAuth(handleAccount))
-	mux.HandleFunc("GET /api/transactions", requireAuth(handleTransactions))
-	mux.HandleFunc("POST /api/deposit", requireAuth(handleDeposit))
-	mux.HandleFunc("POST /api/withdraw", requireAuth(handleWithdraw))
-	mux.HandleFunc("POST /api/transfer", requireAuth(handleTransfer))
-	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-	})
+	mux := buildMux()
 
 	srv := &http.Server{
 		Addr:         "127.0.0.1:" + port,

@@ -133,10 +133,11 @@ export default function Dashboard({ user, onLogout }: Props) {
             <form onSubmit={submitAction} className="space-y-3">
               {tab === 'transfer' && (
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                  <label htmlFor="action-to-account" className="mb-1 block text-sm font-medium text-slate-700">
                     Recipient account
                   </label>
                   <input
+                    id="action-to-account"
                     type="text"
                     value={toAccount}
                     onChange={(e) => setToAccount(e.target.value)}
@@ -147,8 +148,9 @@ export default function Dashboard({ user, onLogout }: Props) {
               )}
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Amount (USD)</label>
+                <label htmlFor="action-amount" className="mb-1 block text-sm font-medium text-slate-700">Amount (USD)</label>
                 <input
+                  id="action-amount"
                   type="number"
                   step="0.01"
                   min="0.01"
@@ -160,10 +162,11 @@ export default function Dashboard({ user, onLogout }: Props) {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="action-description" className="mb-1 block text-sm font-medium text-slate-700">
                   Description <span className="text-slate-400">(optional)</span>
                 </label>
                 <input
+                  id="action-description"
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -244,17 +247,15 @@ function TxRow({ tx }: { tx: Transaction }) {
   const sign = positive ? '+' : '-'
   const absAmount = tx.amount_formatted.replace('-', '')
   const label = kindLabel(tx.kind)
+  const metaText = `${label}${tx.counterparty ? ` · ${tx.counterparty}` : ''} · ${new Date(tx.created_at).toLocaleString()}`
   return (
     <div className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 hover:bg-slate-50">
       <div>
         <div className="text-sm font-medium text-slate-900">{tx.description}</div>
-        <div className="text-xs text-slate-500">
-          {label}
-          {tx.counterparty ? ` · ${tx.counterparty}` : ''} · {new Date(tx.created_at).toLocaleString()}
-        </div>
+        <div className="text-xs text-slate-500">{metaText}</div>
       </div>
       <div className={`font-mono text-sm font-semibold ${positive ? 'text-emerald-600' : 'text-slate-700'}`}>
-        {sign}${absAmount}
+        {`${sign}$${absAmount}`}
       </div>
     </div>
   )
