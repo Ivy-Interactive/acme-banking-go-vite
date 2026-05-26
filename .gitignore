@@ -36,3 +36,7 @@ e2e/blob-report/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Run logs
+run.out.log
+run.err.log
