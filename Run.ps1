@@ -97,7 +97,7 @@ $backendJob = Start-Job -ScriptBlock {
 } -ArgumentList $BackendPort
 
 # Start frontend server
-Write-Host "⚛️  Starting Vite frontend on http://localhost:$FrontendPort..." -ForegroundColor Magenta
+Write-Host "⚛️ Starting Vite frontend on http://localhost:$FrontendPort..." -ForegroundColor Magenta
 $frontendJob = Start-Job -ScriptBlock {
     param($FrontendPort, $BackendPort)
     Set-Location $using:PWD
